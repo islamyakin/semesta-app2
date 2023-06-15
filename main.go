@@ -54,9 +54,13 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 }
 
 func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string) {
-	defer resp.Body.Close()
-
-	ip, err := io.ReadAll(resp.Body)
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Println("Gagal menutup response body:", err)
+		}
+	}()
+	//	ip, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, "Gagal membaca respons", http.StatusInternalServerError)
 		fmt.Println("Gagal membaca respons:", err)
@@ -64,7 +68,7 @@ func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string)
 	}
 
 	fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
-	fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", ip)
+	fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", body)
 }
 
 func main() {
