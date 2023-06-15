@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -15,7 +14,8 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		fmt.Println(err)
-		log.Fatal(err)
+		http.Error(w, "Gagal mendapatkan hostname", http.StatusInternalServerError)
+		return
 	}
 
 	url := "https://api.ipify.org?format=text"
@@ -68,6 +68,13 @@ func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string)
 }
 
 func main() {
-	http.HandleFunc("/aboutus", handlerFunc)
-	http.ListenAndServe(":3001", nil)
+	server := &http.Server{
+		Addr:              ":3001",
+		Handler:           http.HandlerFunc(handlerFunc),
+		ReadHeaderTimeout: 3 * time.Second,
+	}
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }
