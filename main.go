@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,7 +15,7 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	url := "https://api.ipify.org?format=text"
@@ -34,16 +35,7 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 
 	select {
 	case resp := <-respCh:
-		defer resp.Body.Close()
-		ip, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			http.Error(w, "Gagal membaca respons", http.StatusInternalServerError)
-			fmt.Println("Gagal membaca respons:", err)
-			return
-		}
-
-		fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
-		fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", ip)
+		handleResponse(w, resp, hostname)
 	case err := <-errCh:
 		if strings.Contains(err.Error(), "no such host") {
 			fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
@@ -59,6 +51,20 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 		fmt.Println("Waktu tunggu habis")
 		return
 	}
+}
+
+func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string) {
+	defer resp.Body.Close()
+
+	ip, err := io.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, "Gagal membaca respons", http.StatusInternalServerError)
+		fmt.Println("Gagal membaca respons:", err)
+		return
+	}
+
+	fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
+	fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", ip)
 }
 
 func main() {
