@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func handlerFunc(w http.ResponseWriter, r *http.Request) {
+func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	hostname, err := os.Hostname()
 	if err != nil {
