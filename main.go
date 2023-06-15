@@ -10,6 +10,7 @@ import (
 )
 
 func handlerFunc(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
 	hostname, err := os.Hostname()
 	if err != nil {
 		fmt.Println(err)
@@ -45,18 +46,19 @@ func handlerFunc(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", ip)
 	case err := <-errCh:
 		if strings.Contains(err.Error(), "no such host") {
-			http.Error(w, "Tidak ada koneksi internet", http.StatusInternalServerError)
+			fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
+			http.Error(w, "<h1><center>Namun anda tidak terhubung ke internet</center><h1>", http.StatusInternalServerError)
 		} else {
 			http.Error(w, "Kesalahan saat melakukan GET ke URL", http.StatusInternalServerError)
 		}
 		fmt.Println("Gagal melakukan GET ke URL:", err)
 		return
 	case <-time.After(3 * time.Second):
-		http.Error(w, "Waktu tunggu habis", http.StatusInternalServerError)
+		fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
+		fmt.Fprintf(w, "<center><h1>Namun belum berhasil GET ke API, Silahkan refresh kembali</h1></center>")
 		fmt.Println("Waktu tunggu habis")
 		return
 	}
-
 }
 
 func main() {
