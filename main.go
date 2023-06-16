@@ -81,4 +81,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(run())
+}
+func run() string {
+	return "Hackathon SEMESTA - System Administrator"
 }
