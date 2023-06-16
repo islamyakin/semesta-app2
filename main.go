@@ -69,6 +69,7 @@ func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string)
 
 	fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
 	fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", body)
+	fmt.Fprintf(w, `<center><img src="https://www.unger.dev/assets/200ok_logo_big.png" alt="200OK"></center>`)
 }
 
 func main() {
