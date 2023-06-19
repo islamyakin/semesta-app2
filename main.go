@@ -84,6 +84,7 @@ func main() {
 	}
 	fmt.Println(run())
 }
+
 func run() string {
 	return "Hackathon SEMESTA - System Administrator"
 }
