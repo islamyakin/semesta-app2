@@ -11,3 +11,4 @@ name = "gofmt"
 
 [[transformers]]
 name = "gofumpt"
+  import_root = "github.com/islamyakin/semesta-app2"
