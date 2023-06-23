@@ -45,7 +45,7 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 		}
 		fmt.Println("Gagal melakukan GET ke URL:", err)
 		return
-	case <-time.After(5 * time.Second):
+	case <-time.After(10 * time.Second):
 		fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
 		fmt.Fprintf(w, "<center><h1>Namun belum berhasil GET ke API, Silahkan refresh kembali</h1></center>")
 		fmt.Println("Waktu tunggu habis")
