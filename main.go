@@ -9,8 +9,12 @@ import (
 	"time"
 )
 
-func handlerFunc(w http.ResponseWriter, _ *http.Request) {
+func handlerFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
+	uid := r.Header.Get("X-UID")
+	if uid == "" {
+		uid = r.URL.Query().Get("uid")
+	}
 	hostname, err := os.Hostname()
 	if err != nil {
 		fmt.Println(err)
@@ -35,9 +39,10 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 
 	select {
 	case resp := <-respCh:
-		handleResponse(w, resp, hostname)
+		handleResponse(w, resp, hostname, uid)
 	case err := <-errCh:
 		if strings.Contains(err.Error(), "no such host") {
+			fmt.Fprintf(w, `<title>Semesta App 2</title>`)
 			fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
 			http.Error(w, "<h1><center>Namun anda tidak terhubung ke internet</center><h1>", http.StatusInternalServerError)
 		} else {
@@ -53,13 +58,12 @@ func handlerFunc(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string) {
+func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string, uid string) {
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
 			fmt.Println("Gagal menutup response body:", err)
 		}
 	}()
-	//	ip, err := io.ReadAll(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, "Gagal membaca respons", http.StatusInternalServerError)
@@ -67,9 +71,13 @@ func handleResponse(w http.ResponseWriter, resp *http.Response, hostname string)
 		return
 	}
 
+	fmt.Fprintf(w, `<title>Semesta App 2</title>`)
 	fmt.Fprintf(w, "<center><h1>App ini Berjalan di : %s</h1></center>", hostname)
 	fmt.Fprintf(w, "<center><h1>Dengan IP Public : %s</h1></center>", body)
 	fmt.Fprintf(w, `<center><img src="https://www.unger.dev/assets/200ok_logo_big.png" alt="200OK"></center>`)
+	if uid != "" {
+		fmt.Fprintf(w, "<center><h1>UUID: %s</h1></center>", uid)
+	}
 }
 
 func main() {
@@ -78,6 +86,7 @@ func main() {
 		Handler:           http.HandlerFunc(handlerFunc),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
+	fmt.Println("server running on port 3001")
 	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
